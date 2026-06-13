@@ -7,15 +7,28 @@ use AIO\Controller\DockerController;
 
 class ConfigurationManager
 {
+    /**
+     * ⚡ Bolt: Cache configuration array to avoid excessive disk I/O
+     * and repeated JSON parsing during the same request lifecycle.
+     */
+    private ?array $configCache = null;
+
     public function GetConfig() : array
     {
+        // ⚡ Bolt: Return cached configuration if already loaded
+        if ($this->configCache !== null) {
+            return $this->configCache;
+        }
+
         if(file_exists(DataConst::GetConfigFile()))
         {
             $configContent = file_get_contents(DataConst::GetConfigFile());
-            return json_decode($configContent, true);
+            $this->configCache = json_decode($configContent, true);
+            return $this->configCache;
         }
 
-        return [];
+        $this->configCache = [];
+        return $this->configCache;
     }
 
     public function GetPassword() : string {
@@ -444,6 +457,8 @@ class ConfigurationManager
             throw new InvalidSettingConfigurationException(DataConst::GetDataDirectory() . " does not have enough space for writing the config file! Not writing it back!");
         }
         file_put_contents(DataConst::GetConfigFile(), json_encode($config, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT));
+        // ⚡ Bolt: Update cache immediately after writing to disk to prevent stale reads
+        $this->configCache = $config;
     }
 
     private function GetEnvironmentalVariableOrConfig(string $envVariableName, string $configName, string $defaultValue) : string {
