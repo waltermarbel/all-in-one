@@ -421,28 +421,27 @@ class DockerActionManager
         }
     }
 
-    private function isContainerUpdateAvailable(string $id) : string
+    private function isContainerUpdateAvailable(string $id) : bool
     {
         $container = $this->containerDefinitionFetcher->GetContainerById($id);
 
-        $updateAvailable = "";
+        // Short-circuit: return true immediately if an update is found
+        // This avoids unnecessary API calls for checking remaining containers.
         if ($container->GetUpdateState() instanceof VersionDifferentState) {
-            $updateAvailable = '1';
+            return true;
         }
         foreach ($container->GetDependsOn() as $dependency) {
-            $updateAvailable .= $this->isContainerUpdateAvailable($dependency);
+            if ($this->isContainerUpdateAvailable($dependency)) {
+                return true;
+            }
         }
-        return $updateAvailable;
+        return false;
     }
 
     public function isAnyUpdateAvailable() : bool {
         $id = 'nextcloud-aio-apache';
 
-        if ($this->isContainerUpdateAvailable($id) !== "") {
-            return true;
-        } else {
-            return false;
-        }
+        return $this->isContainerUpdateAvailable($id);
     }
 
     private function GetRepoDigestsOfContainer(string $containerName) : ?array {
