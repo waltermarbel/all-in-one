@@ -7,12 +7,19 @@ use AIO\Controller\DockerController;
 
 class ConfigurationManager
 {
+    private ?array $configCache = null;
+
     public function GetConfig() : array
     {
+        if ($this->configCache !== null) {
+            return $this->configCache;
+        }
+
         if(file_exists(DataConst::GetConfigFile()))
         {
             $configContent = file_get_contents(DataConst::GetConfigFile());
-            return json_decode($configContent, true);
+            $this->configCache = json_decode($configContent, true);
+            return $this->configCache;
         }
 
         return [];
@@ -444,6 +451,7 @@ class ConfigurationManager
             throw new InvalidSettingConfigurationException(DataConst::GetDataDirectory() . " does not have enough space for writing the config file! Not writing it back!");
         }
         file_put_contents(DataConst::GetConfigFile(), json_encode($config, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT));
+        $this->configCache = $config;
     }
 
     private function GetEnvironmentalVariableOrConfig(string $envVariableName, string $configName, string $defaultValue) : string {
