@@ -17,6 +17,7 @@ class ContainerDefinitionFetcher
 {
     private ConfigurationManager $configurationManager;
     private \DI\Container $container;
+    private ?array $definitionData = null;
 
     public function __construct(
         ConfigurationManager $configurationManager,
@@ -45,7 +46,10 @@ class ContainerDefinitionFetcher
      */
     private function GetDefinition(bool $latest): array
     {
-        $data = json_decode(file_get_contents(__DIR__ . '/../containers.json'), true);
+        if ($this->definitionData === null) {
+            $this->definitionData = json_decode(file_get_contents(__DIR__ . '/../containers.json'), true);
+        }
+        $data = $this->definitionData;
 
         $containers = [];
         foreach ($data['production'] as $entry) {
