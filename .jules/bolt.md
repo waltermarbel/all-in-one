@@ -1,3 +1,3 @@
-## 2024-05-30 - Type mismatch comparison bug discovery
-**Learning:** In PHP 8, `MyClass::class` returns a string. If the codebase compares an object instance to a class name string using `===`, it evaluates to `false` and might be a latent bug. However, as a performance agent, trying to unprompted refactor this to `instanceof MyClass` changes the behavior and might break systems relying on the bug or have side-effects.
-**Action:** Never change correctness or conditional logic in performance tasks, even if it looks like a clear bug. Keep PR scope strictly to safe performance optimizations.
+## 2024-06-13 - Cached ConfigurationManager->GetConfig
+**Learning:** Found a recurring pattern where `ConfigurationManager->GetConfig` continuously loads and decodes the configuration JSON file for every single settings check (e.g. `isTalkEnabled()`, `isClamavEnabled()`, `GetToken()`). This incurs a significant disk I/O and CPU penalty (JSON parsing) on repeated checks across the codebase lifecycle.
+**Action:** Implemented an instance-level cache `private ?array $configCache`. Ensures reads stay fast while still keeping sync via immediate cache updates on `WriteConfig`. Next time watch for `json_decode(file_get_contents(...))` calls wrapped in getter functions called repeatedly in a loop (like `ContainerDefinitionFetcher->GetDefinition()`).
