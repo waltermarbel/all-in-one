@@ -3,20 +3,35 @@
 namespace AIO\Data;
 
 class DataConst {
+    private static ?string $dataDirectoryCache = null;
+    private static ?string $sessionDirectoryCache = null;
+
     public static function GetDataDirectory() : string {
-        if(is_dir('/mnt/docker-aio-config/data/')) {
-            return '/mnt/docker-aio-config/data/';
+        if (self::$dataDirectoryCache !== null) {
+            return self::$dataDirectoryCache;
         }
 
-        return realpath(__DIR__ . '/../../data/');
+        if(is_dir('/mnt/docker-aio-config/data/')) {
+            self::$dataDirectoryCache = '/mnt/docker-aio-config/data/';
+            return self::$dataDirectoryCache;
+        }
+
+        self::$dataDirectoryCache = realpath(__DIR__ . '/../../data/');
+        return self::$dataDirectoryCache;
     }
 
     public static function GetSessionDirectory() : string {
-        if(is_dir('/mnt/docker-aio-config/session/')) {
-            return '/mnt/docker-aio-config/session/';
+        if (self::$sessionDirectoryCache !== null) {
+            return self::$sessionDirectoryCache;
         }
 
-        return realpath(__DIR__ . '/../../session/');
+        if(is_dir('/mnt/docker-aio-config/session/')) {
+            self::$sessionDirectoryCache = '/mnt/docker-aio-config/session/';
+            return self::$sessionDirectoryCache;
+        }
+
+        self::$sessionDirectoryCache = realpath(__DIR__ . '/../../session/');
+        return self::$sessionDirectoryCache;
     }
 
     public static function GetConfigFile() : string {
