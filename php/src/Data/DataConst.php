@@ -3,20 +3,39 @@
 namespace AIO\Data;
 
 class DataConst {
+    /**
+     * ⚡ Bolt: Cache statically mounted directory paths in memory
+     * to avoid redundant `is_dir` and `realpath` filesystem checks during a request.
+     */
+    private static ?string $dataDirectory = null;
+    private static ?string $sessionDirectory = null;
+
     public static function GetDataDirectory() : string {
-        if(is_dir('/mnt/docker-aio-config/data/')) {
-            return '/mnt/docker-aio-config/data/';
+        if (self::$dataDirectory !== null) {
+            return self::$dataDirectory;
         }
 
-        return realpath(__DIR__ . '/../../data/');
+        if(is_dir('/mnt/docker-aio-config/data/')) {
+            self::$dataDirectory = '/mnt/docker-aio-config/data/';
+        } else {
+            self::$dataDirectory = realpath(__DIR__ . '/../../data/');
+        }
+
+        return self::$dataDirectory;
     }
 
     public static function GetSessionDirectory() : string {
-        if(is_dir('/mnt/docker-aio-config/session/')) {
-            return '/mnt/docker-aio-config/session/';
+        if (self::$sessionDirectory !== null) {
+            return self::$sessionDirectory;
         }
 
-        return realpath(__DIR__ . '/../../session/');
+        if(is_dir('/mnt/docker-aio-config/session/')) {
+            self::$sessionDirectory = '/mnt/docker-aio-config/session/';
+        } else {
+            self::$sessionDirectory = realpath(__DIR__ . '/../../session/');
+        }
+
+        return self::$sessionDirectory;
     }
 
     public static function GetConfigFile() : string {
