@@ -1,3 +1,7 @@
 ## 2024-06-13 - Cached ConfigurationManager->GetConfig
 **Learning:** Found a recurring pattern where `ConfigurationManager->GetConfig` continuously loads and decodes the configuration JSON file for every single settings check (e.g. `isTalkEnabled()`, `isClamavEnabled()`, `GetToken()`). This incurs a significant disk I/O and CPU penalty (JSON parsing) on repeated checks across the codebase lifecycle.
 **Action:** Implemented an instance-level cache `private ?array $configCache`. Ensures reads stay fast while still keeping sync via immediate cache updates on `WriteConfig`. Next time watch for `json_decode(file_get_contents(...))` calls wrapped in getter functions called repeatedly in a loop (like `ContainerDefinitionFetcher->GetDefinition()`).
+
+## 2024-06-30 - Cache static directory resolutions in memory
+**Learning:** In Nextcloud AIO, data and session directories (e.g., `/mnt/docker-aio-config/`) are statically mounted Docker volumes that do not change paths during a single request lifecycle, making their resolution paths safe to cache in memory to avoid redundant `is_dir()` and `realpath()` filesystem checks.
+**Action:** When working with statically mounted Docker volumes, caching the paths in memory can improve performance by reducing the number of file system checks, especially if these paths are frequently accessed across many different requests or loops within the application.
